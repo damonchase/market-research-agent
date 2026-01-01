@@ -1,0 +1,13 @@
+# Node
+client/node_modules/
+node_modules/
+
+# Python
+server/.venv/
+
+# Env files
+.env
+server/.env
+
+# OS
+.DS_Store
