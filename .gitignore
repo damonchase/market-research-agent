@@ -4,6 +4,7 @@ node_modules/
 
 # Python
 server/.venv/
+/server/app/__pycache__/main.cpython-314.pyc
 
 # Env files
 .env
