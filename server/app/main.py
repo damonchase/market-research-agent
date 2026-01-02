@@ -23,9 +23,6 @@ app.add_middleware(
 class PromptRequest(BaseModel):
     prompt: str
 
-@app.get("/api/hello")
-def hello():
-    return {"message": "Hello from Python!"}
 
 @app.post("/api/generate_response")
 def generate_response(request: PromptRequest):
