@@ -25,7 +25,7 @@ function App() {
       <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mt: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <TextField 
-            label="search" 
+            label="stock" 
             variant="outlined" 
             value={request} 
             onChange={(e) => setRequest(e.target.value)}
