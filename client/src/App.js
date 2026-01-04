@@ -52,9 +52,9 @@ function App() {
           </ButtonGroup>}
         </Box>
         <Box>
-          {sent && graph==="1D" && <img src="/1D-Graph.png" alt="Graph of stock data for the past day" />}
-          {sent && graph==="5D" && <img src="/5D-Graph.png" alt="Graph of stock data for the past 5 days" />}
-          {sent && graph==="1M" && <img src="/1M-Graph.png" alt="Graph of stock data for the past month" />}
+          {sent && graph==="1D" && <img src="/images/1D-Graph.png" alt="Graph of stock data for the past day" />}
+          {sent && graph==="5D" && <img src="/images/5D-Graph.png" alt="Graph of stock data for the past 5 days" />}
+          {sent && graph==="1M" && <img src="/images/1M-Graph.png" alt="Graph of stock data for the past month" />}
         </Box>
       </Box>
     </div>
