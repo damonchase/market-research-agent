@@ -7,7 +7,8 @@ import { useState } from "react";
 function App() {
   const [request, setRequest] = useState("");
   const [response, setResponse] = useState("");
-
+  const [sent, setSent] = useState(false)
+  
   const handleSend = async () => {
     const res = await fetch("http://localhost:8000/api/generate_response", {
       method: "POST",
@@ -18,6 +19,8 @@ function App() {
     })
     const data = await res.json()
         setResponse(data.text)
+    
+    setSent(true)
   };
 
   return (
@@ -37,6 +40,9 @@ function App() {
 
         <Box sx={{ mt: 2, width: '100%', maxWidth: '600px' }}>
           <ReactMarkdown>{response}</ReactMarkdown>
+        </Box>
+        <Box>
+          {sent && <img src="/soccer-ball.jpg" alt="Test" />}
         </Box>
       </Box>
     </div>
