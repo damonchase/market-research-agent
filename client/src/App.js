@@ -47,14 +47,14 @@ function App() {
         <Box sx={{ mt: 1, mb: 1 }}>
           {sent && <ButtonGroup variant="contained" aria-label="Basic button group">
             <Button onClick={() => setGraph("1D")}>1D</Button>
-            <Button onClick={() => setGraph("1W")}>1W</Button>
+            <Button onClick={() => setGraph("5D")}>1W</Button>
             <Button onClick={() => setGraph("1M")}>1M</Button>
           </ButtonGroup>}
         </Box>
         <Box>
-          {sent && graph==="1D" && <img src="/1D-Graph.jpg" alt="Graph of stock data for the past day" />}
-          {sent && graph==="5D" && <img src="/5D-Graph.jpg" alt="Graph of stock data for the past 5 days" />}
-          {sent && graph==="1M" && <img src="/1M-Graph.jpg" alt="Graph of stock data for the past month" />}
+          {sent && graph==="1D" && <img src="/1D-Graph.png" alt="Graph of stock data for the past day" />}
+          {sent && graph==="5D" && <img src="/5D-Graph.png" alt="Graph of stock data for the past 5 days" />}
+          {sent && graph==="1M" && <img src="/1M-Graph.png" alt="Graph of stock data for the past month" />}
         </Box>
       </Box>
     </div>
