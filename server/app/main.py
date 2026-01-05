@@ -43,7 +43,7 @@ def generate_graphs(company):
 
     df = yf.Ticker(response.text).history()
 
-    path = r"C:\Users\damon\Documents\market-research-agent\client\images"
+    path = r"C:\Users\damon\Documents\market-research-agent\client\public\images"
 
     graph_prompt = f"""
         Your job is to generate Python code to create three stock price line graphs (1 Day, 5 Days, and 1 Month) using a pre-existing pandas DataFrame named 'df'.
