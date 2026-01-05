@@ -1,4 +1,4 @@
-import Research from "./components/Research"
+import Research from "./pages/Research"
 
 function App() {
   return (
