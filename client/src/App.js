@@ -1,10 +1,17 @@
+import { Routes, Route } from "react-router-dom"
+import Navbar from "./components/Navbar"
 import Research from "./pages/Research"
+import Articles from "./pages/Articles" 
 
 function App() {
   return (
-    <div className="App">
-      <Research />
-    </div>
+    <>
+      <Navbar />
+      <Routes>
+        <Route index path="/" element={<Research />} />
+        <Route path="/articles" element={<Articles />} />
+      </Routes>
+    </>
   );
 }
 
