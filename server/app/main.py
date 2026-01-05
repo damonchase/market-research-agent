@@ -88,7 +88,7 @@ def generate_graphs(company):
 
     python_code = matched.group(1).strip()
 
-    code_text_path = "C:\Users\damon\Documents\market-research-agent\server\llm-code.txt"
+    code_text_path = r"C:\Users\damon\Documents\market-research-agent\server\llm-code.txt"
 
     with open(code_text_path, "w") as file:
         file.write(python_code)

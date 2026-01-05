@@ -47,7 +47,7 @@ function Research() {
         <Box sx={{ mt: 1, mb: 1 }}>
           {sent && <ButtonGroup variant="contained" aria-label="Basic button group">
             <Button onClick={() => setGraph("1D")}>1D</Button>
-            <Button onClick={() => setGraph("5D")}>1W</Button>
+            <Button onClick={() => setGraph("5D")}>5D</Button>
             <Button onClick={() => setGraph("1M")}>1M</Button>
           </ButtonGroup>}
         </Box>
