@@ -1,0 +1,20 @@
+.article-row {
+  padding: 15px 0; /* Adds space above and below the text */
+  border-bottom: 1px solid #eaeaea; /* The "slight" horizontal line */
+}
+
+/* Optional: Remove the line from the very last item */
+.article-row:last-child {
+  border-bottom: none;
+}
+
+.article-link {
+  text-decoration: none;
+  color: #007bff;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.article-link:hover {
+  text-decoration: underline;
+}
