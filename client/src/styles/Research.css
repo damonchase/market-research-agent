@@ -1,0 +1,45 @@
+/* Ensure body is dark to match the Box background */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #0B1120;
+    font-family: 'Roboto', sans-serif;
+}
+
+/* The standard HTML input styling */
+.custom-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #ffffff;
+    padding: 10px;
+    font-size: 16px;
+    width: 250px;
+    font-family: inherit;
+}
+
+.custom-input::placeholder {
+    color: #64748b;
+}
+
+/* Image styling */
+.graph-image {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: block;
+    margin: 20px auto;
+}
+
+/* React Markdown styling adjustments */
+.Research p {
+    margin-bottom: 1em;
+}
+
+.Research h1, .Research h2, .Research h3 {
+    color: #3b82f6; /* Makes headers in the AI response stand out */
+    margin-top: 0;
+}
