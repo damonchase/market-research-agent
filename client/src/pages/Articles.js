@@ -9,7 +9,7 @@ function Articles() {
 
   return (
     <div className="main-container" style={{ padding: '20px', maxWidth: "600px", margin: '0 auto' }}>
-      <h1>Articles</h1>
+      <h1 style={{ color: 'white' }}>Articles</h1>
       <div className="article-list">
         {articles.map((article) => (
           <div key={article.id} className="article-row">
