@@ -10,7 +10,7 @@ function Research() {
   const [request, setRequest] = useState("");
   const [response, setResponse] = useState("");
   const [sent, setSent] = useState(false);
-  const [graph, setGraph] = useState("1D");
+  const [graph, setGraph] = useState("5d");
   const [loading, setLoading] = useState(false);
 
   const handleSend = async (e) => {
@@ -114,7 +114,7 @@ function Research() {
         {sent && (
           <Box sx={{ mt: 4, mb: 1 }}>
             <ButtonGroup variant="outlined">
-              {["1D", "5D", "1M"].map((range) => (
+              {["5d", "1mo", "6mo"].map((range) => (
                 <Button 
                   key={range}
                   onClick={() => setGraph(range)}
@@ -137,7 +137,7 @@ function Research() {
           {sent && (
             <img 
               className="graph-image" 
-              src={`/images/${graph}-Graph.png`} 
+              src={`/images/${graph}.png`} 
               alt={`Stock data for ${graph}`} 
             />
           )}
