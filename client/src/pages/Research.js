@@ -33,6 +33,7 @@ function Research() {
       }
 
       const data = await res.json();
+      console.log(data.text)
       setResponse(data.text);
       setSent(true);
     } catch (error) {
