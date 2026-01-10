@@ -9,6 +9,7 @@ from app.tools import web_search
 import yfinance as yf
 import json
 import plotly.express as px
+import re
 
 _ = load_dotenv()
 gemini_api_key = os.getenv("GEMINI_API_KEY")
@@ -17,9 +18,15 @@ client = genai.Client(api_key=gemini_api_key)
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:3000",  # Local
+    "https://market-research-agent-rosy.vercel.app",  # Vercel
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -27,30 +34,54 @@ app.add_middleware(
 class PromptRequest(BaseModel):
     prompt: str
 
+def extract_json(text):
+    # Use regex to find everything between the first { and the last }
+    match = re.search(r'(\{.*\}|\[.*\])', text, re.DOTALL)
+    if match:
+        return match.group(0)
+    return text
+
+import os
+import yfinance as yf
+import plotly.express as px
+
 def generate_graphs(ticker):
     company = yf.Ticker(ticker)
 
-    df5d = company.history(period="5d", interval="1d").round({'Close': 2})
-    df1mo = company.history(period="1mo", interval="1d").round({'Close': 2})
-    df6mo = company.history(period="6mo", interval="1d").round({'Close': 2})
+    full_history = company.history(period="6mo", interval="1d").round({'Close': 2})
+    
+    if full_history.empty:
+        print(f"No data found for {ticker}")
+        return
 
-    df_list = [{"df": df5d, "period": "5d"}, {"df": df1mo, "period": "1mo"}, {"df": df6mo, "period": "6mo"}]
 
-    for df in df_list:
-        data = df["df"]
-        period = df["period"]
+    df_list = [
+        {"df": full_history.tail(5), "period": "5d"},
+        {"df": full_history.tail(21), "period": "1mo"},
+        {"df": full_history, "period": "6mo"}
+    ]
+
+    # 2. Use a Relative Path for images
+    # This points to the public/images folder inside your project
+    base_path = os.path.join("..", "client", "public", "images")
+    os.makedirs(base_path, exist_ok=True) # Creates folder if it doesn't exist
+
+    for item in df_list:
+        data = item["df"]
+        period = item["period"]
+        
         fig1 = px.line(
             data,
             x=data.index,
             y="Close",
-            title=f"{company.info['longName']}",
-            labels={"Close": "Price (USD)", "index": "Date"},
+            title=f"{ticker} - {period} Analysis", # Avoid using .info['longName'] to prevent 429s
+            labels={"Close": "Price (USD)", "Date": "Date"},
             color_discrete_sequence=['purple']
         )
-        fig1.write_image(f"C:\Users\damon\Documents\market-research-agent\client\public\images\{period}.png") 
-
-
-
+        
+        # Save using the relative path
+        img_path = os.path.join(base_path, f"{period}.png")
+        fig1.write_image(img_path)
 
 @app.post("/api/generate_response")
 def generate_response(request: PromptRequest):
@@ -71,7 +102,8 @@ def generate_response(request: PromptRequest):
         3. **Recommendation:** Conclude with a clear "Buy", "Hold", or "Sell" rating with a 1-sentence justification.
 
         ### OUTPUT FORMAT:
-        You must return ONLY a valid JSON object. Use Markdown formatting (headers, bolding, lists) within the "text" field to ensure the response is scannable.
+        You must return ONLY a valid JSON object in plain text so that it could be converted to a json object in python using the json.loads() function, so make sure your output would be compatable.
+        Use Markdown formatting (headers, bolding, lists) within the "text" field to ensure the response is scannable.
 
         JSON Structure:
         {{
@@ -81,8 +113,8 @@ def generate_response(request: PromptRequest):
         """
     
     config = types.GenerateContentConfig(
-        tools=[web_search],
-        system_instruction=ai_instruction
+            tools=[web_search],
+            system_instruction=ai_instruction
     )
 
     response = client.models.generate_content(
@@ -91,8 +123,17 @@ def generate_response(request: PromptRequest):
         config=config
     )
 
-    parsed_response = json.loads(response.text)
+    raw_text = response.text
 
-    generate_graphs(parsed_response["ticker"])
 
-    return {"text": parsed_response["text"]}
+    try:
+        clean_json = extract_json(raw_text)
+        parsed_response = json.loads(clean_json)  
+        print(parsed_response["text"])      
+        # generate_graphs(parsed_response["ticker"])
+        
+        return {"text": parsed_response["text"]}
+        
+    except Exception as e:
+        
+        return {"text": e}
