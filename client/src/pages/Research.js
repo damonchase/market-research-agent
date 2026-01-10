@@ -12,7 +12,9 @@ function Research() {
   const [sent, setSent] = useState(false);
   const [graph, setGraph] = useState("5d");
   const [loading, setLoading] = useState(false);
-  const [imageData, setImageData] = useState(null);
+  const [imageData1, setImageData1] = useState(null);
+  const [imageData2, setImageData2] = useState(null);
+  const [imageData3, setImageData3] = useState(null);
 
   const handleSend = async (e) => {
     if (e) e.preventDefault();
@@ -35,7 +37,10 @@ function Research() {
 
       const data = await res.json();
       setResponse(data.text);
-      setImageData(data.image_data)
+      setImageData1(data.image_data1)
+      setImageData2(data.image_data2)
+      setImageData3(data.image_data3)
+
       setSent(true);
     } catch (error) {
       console.error("Failed to fetch data:", error);
@@ -136,10 +141,24 @@ function Research() {
 
         {/* Dynamic Image Display */}
         <Box sx={{ mt: 2 }}>
-          {sent && (
+          {sent && graph==="5d" && (
             <img 
               className="graph-image" 
-              src={imageData} 
+              src={imageData1} 
+              alt={`Stock data for ${graph}`} 
+            />
+          )}
+          {sent && graph==="1mo" && (
+            <img 
+              className="graph-image" 
+              src={imageData2} 
+              alt={`Stock data for ${graph}`} 
+            />
+          )}
+          {sent && graph==="6mo" && (
+            <img 
+              className="graph-image" 
+              src={imageData3} 
               alt={`Stock data for ${graph}`} 
             />
           )}

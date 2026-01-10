@@ -14,6 +14,7 @@ import re
 import os
 import yfinance as yf
 import plotly.express as px
+import kaleido
 
 _ = load_dotenv()
 gemini_api_key = os.getenv("GEMINI_API_KEY")
@@ -73,7 +74,7 @@ def generate_graphs(ticker):
             color_discrete_sequence=['purple']
         )
         
-        img_path = r".\server\images"
+        img_path = fr".\images\{period}.png"
         fig1.write_image(img_path)
 
 @app.post("/api/generate_response")
@@ -122,15 +123,19 @@ def generate_response(request: PromptRequest):
     try:
         clean_json = extract_json(raw_text)
         parsed_response = json.loads(clean_json)  
-        print(parsed_response["text"])      
         generate_graphs(parsed_response["ticker"])
 
         with open("./images/5d.png", "rb") as image_file:
-            encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+            encoded_string1 = base64.b64encode(image_file.read()).decode('utf-8')
+        with open("./images/1mo.png", "rb") as image_file2:
+            encoded_string2 = base64.b64encode(image_file2.read()).decode('utf-8')
+        with open("./images/6mo.png", "rb") as image_file3:
+            encoded_string3 = base64.b64encode(image_file3.read()).decode('utf-8')
         
         return {"text": parsed_response["text"],
-                "image_data": f"data:image/png;base64,{encoded_string}"}
+                "image_data1": f"data:image/png;base64,{encoded_string1}",
+                "image_data2": f"data:image/png;base64, {encoded_string2}",
+                "image_data3": f"data:image/png;base64, {encoded_string3}"}
         
     except Exception as e:
-        
         return {"text": e}

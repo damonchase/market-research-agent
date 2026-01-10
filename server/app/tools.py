@@ -17,5 +17,4 @@ def web_search(query: str) -> str:
     
     # Format the results into a string for the model to read
     results = [f"Source: {r['url']}\nContent: {r['content']}" for r in response['results']]
-    print(query)
     return "\n\n".join(results)
