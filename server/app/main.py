@@ -1,3 +1,4 @@
+import base64
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -10,6 +11,9 @@ import yfinance as yf
 import json
 import plotly.express as px
 import re
+import os
+import yfinance as yf
+import plotly.express as px
 
 _ = load_dotenv()
 gemini_api_key = os.getenv("GEMINI_API_KEY")
@@ -41,10 +45,6 @@ def extract_json(text):
         return match.group(0)
     return text
 
-import os
-import yfinance as yf
-import plotly.express as px
-
 def generate_graphs(ticker):
     company = yf.Ticker(ticker)
 
@@ -54,17 +54,11 @@ def generate_graphs(ticker):
         print(f"No data found for {ticker}")
         return
 
-
     df_list = [
         {"df": full_history.tail(5), "period": "5d"},
         {"df": full_history.tail(21), "period": "1mo"},
         {"df": full_history, "period": "6mo"}
     ]
-
-    # 2. Use a Relative Path for images
-    # This points to the public/images folder inside your project
-    base_path = os.path.join("..", "client", "public", "images")
-    os.makedirs(base_path, exist_ok=True) # Creates folder if it doesn't exist
 
     for item in df_list:
         data = item["df"]
@@ -74,13 +68,12 @@ def generate_graphs(ticker):
             data,
             x=data.index,
             y="Close",
-            title=f"{ticker} - {period} Analysis", # Avoid using .info['longName'] to prevent 429s
+            title=f"{ticker} - {period} Analysis",
             labels={"Close": "Price (USD)", "Date": "Date"},
             color_discrete_sequence=['purple']
         )
         
-        # Save using the relative path
-        img_path = os.path.join(base_path, f"{period}.png")
+        img_path = r".\server\images"
         fig1.write_image(img_path)
 
 @app.post("/api/generate_response")
@@ -130,9 +123,13 @@ def generate_response(request: PromptRequest):
         clean_json = extract_json(raw_text)
         parsed_response = json.loads(clean_json)  
         print(parsed_response["text"])      
-        # generate_graphs(parsed_response["ticker"])
+        generate_graphs(parsed_response["ticker"])
+
+        with open("./images/5d.png", "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
         
-        return {"text": parsed_response["text"]}
+        return {"text": parsed_response["text"],
+                "image_data": f"data:image/png;base64,{encoded_string}"}
         
     except Exception as e:
         

@@ -12,6 +12,7 @@ function Research() {
   const [sent, setSent] = useState(false);
   const [graph, setGraph] = useState("5d");
   const [loading, setLoading] = useState(false);
+  const [imageData, setImageData] = useState(null);
 
   const handleSend = async (e) => {
     if (e) e.preventDefault();
@@ -33,8 +34,8 @@ function Research() {
       }
 
       const data = await res.json();
-      console.log(data.text)
       setResponse(data.text);
+      setImageData(data.image_data)
       setSent(true);
     } catch (error) {
       console.error("Failed to fetch data:", error);
@@ -138,7 +139,7 @@ function Research() {
           {sent && (
             <img 
               className="graph-image" 
-              src={`/images/${graph}.png`} 
+              src={imageData} 
               alt={`Stock data for ${graph}`} 
             />
           )}
