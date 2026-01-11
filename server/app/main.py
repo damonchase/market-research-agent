@@ -14,8 +14,9 @@ import re
 import os
 import yfinance as yf
 import plotly.express as px
-import matplotlib.pyplot as plt
 import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 import typing_extensions as typing
 
 
@@ -39,23 +40,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+IMAGES_DIR = os.path.join(os.getcwd(), "images")
+if not os.path.exists(IMAGES_DIR):
+    os.makedirs(IMAGES_DIR)
+
 class PromptRequest(BaseModel):
     prompt: str
 
-class ResearchReport(typing.TypedDict):
-    ticker: str
-    text: str
-
 def extract_json(text):
-    # Use regex to find everything between the first { and the last }
     match = re.search(r'(\{.*\}|\[.*\])', text, re.DOTALL)
     if match:
         return match.group(0)
     return text
 
-IMAGES_DIR = os.path.join(os.getcwd(), "images")
-if not os.path.exists(IMAGES_DIR):
-    os.makedirs(IMAGES_DIR)
+def get_base64(period):
+            path = os.path.join(IMAGES_DIR, f"{period}.png")
+            with open(path, "rb") as f:
+                return base64.b64encode(f.read()).decode('utf-8')
+
 
 def generate_graphs(ticker):
     company = yf.Ticker(ticker)
@@ -75,73 +77,67 @@ def generate_graphs(ticker):
         data = item["data"]
         period_name = item["name"]
         
-        # Create the plot
         plt.figure(figsize=(10, 5))
         plt.plot(data.index, data['Close'], color='purple', linewidth=2)
         
-        # Styling
         plt.title(f"{ticker} - {period_name} Analysis", fontsize=14)
         plt.xlabel("Date")
         plt.ylabel("Price (USD)")
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.tight_layout()
 
-        # Save the image (Uses standard OS paths we discussed)
         img_path = os.path.join(IMAGES_DIR, f"{period_name}.png")
         plt.savefig(img_path)
-        plt.close() # Important: Close the plot to free up memory
+        plt.close()
         
 @app.post("/api/generate_response")
 def generate_response(request: PromptRequest):
+    ai_instruction = f"""
+            You are a Senior Equity Research Analyst. Your goal is to provide deep, data-driven insights into stocks.
+
+            ### OPERATIONAL RULES:
+            1. **Web Search:** Always use the `web_search` tool to get the latest stock price, recent news (last 7 days), and quarterly earnings data.
+            2. **Analysis:** Evaluate the stock based on:
+                - Recent price action and momentum.
+                - Key fundamental catalysts (earnings, product launches).
+                - Market sentiment and analyst ratings.
+            3. **Recommendation:** Conclude with a clear "Buy", "Hold", or "Sell" rating with a 1-sentence justification.
+
+            ### OUTPUT FORMAT:
+            You must return ONLY a valid JSON object. Use Markdown formatting (headers, bolding, lists) within the "text" field to ensure the response is scannable.
+
+            JSON Structure:
+            {{
+                "ticker": "STRING (Uppercase)",
+                "text": "STRING (Markdown formatted research report)"
+            }}
+            """
+    
+    config = types.GenerateContentConfig(
+        tools=[web_search],
+        system_instruction=ai_instruction
+    )
+
     content = types.Content(
             role="user",
             parts=[types.Part(text=request.prompt)]
     )
 
-    ai_instruction = """
-    You are a Senior Equity Research Analyst.
-
-    ### OUTPUT RULES:
-    1. Return ONLY a valid JSON object.
-    2. The "text" field MUST contain the Markdown report.
-    3. Use standard JSON string escaping (e.g., " for quotes, \n for newlines). 
-    4. Do not include markdown code blocks (like ```json) in your response.
-
-    Structure:
-    {
-        "ticker": "TICKER",
-        "text": "MARKDOWN_CONTENT"
-    }
-    """    
-    config = types.GenerateContentConfig(
-        tools=[web_search],
-        system_instruction="You are a Senior Equity Research Analyst. Provide deep, data-driven insights.",
-        response_mime_type="application/json",
-        response_schema=ResearchReport, # Forces the AI to follow your dictionary structure
-    )
-
     response = client.models.generate_content(
-        model="gemini-2.0-flash", # Use 2.0 or 1.5 for best schema support
+        model="gemini-2.5-flash",
         contents=content,
         config=config
     )
 
-
+    
 
     try:
-        parsed_response = json.loads(response.text) 
-        
-        # This will now save to /opt/render/project/src/server/images/ on Render
-        generate_graphs(parsed_response["ticker"])
-
-        # 3. Use the global IMAGES_DIR variable for reading
-        def get_base64(period):
-            path = os.path.join(IMAGES_DIR, f"{period}.png")
-            with open(path, "rb") as f:
-                return base64.b64encode(f.read()).decode('utf-8')
+        json_response = json.loads(extract_json(response.text))
+        print(f"Response ======================\n{json_response["text"]}")
+        generate_graphs(json_response["ticker"])
 
         return {
-            "text": parsed_response["text"],
+            "text": json_response["text"],
             "image_data1": f"data:image/png;base64,{get_base64('5d')}",
             "image_data2": f"data:image/png;base64,{get_base64('1mo')}",
             "image_data3": f"data:image/png;base64,{get_base64('6mo')}"
