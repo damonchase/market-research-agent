@@ -23,7 +23,7 @@ function Research() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/generate_response`, {
+      const res = await fetch(`https://market-research-agent-4zhs.onrender.com/api/generate_response`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
