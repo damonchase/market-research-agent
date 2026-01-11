@@ -16,6 +16,8 @@ import yfinance as yf
 import plotly.express as px
 import matplotlib.pyplot as plt
 import matplotlib
+import typing_extensions as typing
+
 
 _ = load_dotenv()
 gemini_api_key = os.getenv("GEMINI_API_KEY")
@@ -39,6 +41,10 @@ app.add_middleware(
 
 class PromptRequest(BaseModel):
     prompt: str
+
+class ResearchReport(typing.TypedDict):
+    ticker: str
+    text: str
 
 def extract_json(text):
     # Use regex to find everything between the first { and the last }
@@ -108,23 +114,22 @@ def generate_response(request: PromptRequest):
     }
     """    
     config = types.GenerateContentConfig(
-            tools=[web_search],
-            system_instruction=ai_instruction
+        tools=[web_search],
+        system_instruction="You are a Senior Equity Research Analyst. Provide deep, data-driven insights.",
+        response_mime_type="application/json",
+        response_schema=ResearchReport, # Forces the AI to follow your dictionary structure
     )
 
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-2.0-flash", # Use 2.0 or 1.5 for best schema support
         contents=content,
         config=config
     )
 
-    raw_text = response.text
 
 
     try:
-        raw_text = response.text
-        clean_json = extract_json(raw_text)
-        parsed_response = json.loads(clean_json)  
+        parsed_response = json.loads(response.text) 
         
         # This will now save to /opt/render/project/src/server/images/ on Render
         generate_graphs(parsed_response["ticker"])
@@ -143,8 +148,6 @@ def generate_response(request: PromptRequest):
         }
         
     except Exception as e:
-        # Crucial for debugging on Render: 
-        # This prints the REAL error to the Render logs
         import traceback
         print(traceback.format_exc()) 
         return {"text": f"Error: {str(e)}"} 
