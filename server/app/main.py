@@ -132,6 +132,9 @@ def generate_response(request: PromptRequest):
         with open("./images/6mo.png", "rb") as image_file3:
             encoded_string3 = base64.b64encode(image_file3.read()).decode('utf-8')
         
+        print(f"DEBUG: Text length is {len(str(parsed_response["text"]))}")
+        print(f"DEBUG: Content is {parsed_response["text"]}")
+
         return {"text": parsed_response["text"],
                 "image_data1": f"data:image/png;base64,{encoded_string1}",
                 "image_data2": f"data:image/png;base64, {encoded_string2}",
