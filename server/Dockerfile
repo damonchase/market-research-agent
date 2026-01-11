@@ -24,7 +24,7 @@ COPY pyproject.toml uv.lock ./
 
 # 4. Install dependencies using uv
 # --frozen ensures it uses the exact versions in your lockfile
-RUN uv pip install --system --frozen -r pyproject.toml
+RUN uv pip install --system --frozen .
 
 # 5. Copy the rest of your code
 COPY . .
