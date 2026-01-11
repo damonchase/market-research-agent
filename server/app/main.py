@@ -86,28 +86,21 @@ def generate_response(request: PromptRequest):
             parts=[types.Part(text=request.prompt)]
     )
 
-    ai_instruction = f"""
-        You are a Senior Equity Research Analyst. Your goal is to provide deep, data-driven insights into stocks.
+    ai_instruction = """
+    You are a Senior Equity Research Analyst.
 
-        ### OPERATIONAL RULES:
-        1. **Web Search:** Always use the `web_search` tool to get the latest stock price, recent news (last 7 days), and quarterly earnings data.
-        2. **Analysis:** Evaluate the stock based on:
-            - Recent price action and momentum.
-            - Key fundamental catalysts (earnings, product launches).
-            - Market sentiment and analyst ratings.
-        3. **Recommendation:** Conclude with a clear "Buy", "Hold", or "Sell" rating with a 1-sentence justification.
+    ### OUTPUT RULES:
+    1. Return ONLY a valid JSON object.
+    2. The "text" field MUST contain the Markdown report.
+    3. IMPORTANT: Escape all double quotes inside the "text" field with a backslash (\\") and ensure newlines are properly represented as \\n.
+    4. Do not include any text before or after the JSON (no "Here is the report:").
 
-        ### OUTPUT FORMAT:
-        You must return ONLY a valid JSON object in plain text so that it could be converted to a json object in python using the json.loads() function, so make sure your output would be compatable.
-        Use Markdown formatting (headers, bolding, lists) within the "text" field to ensure the response is scannable.
-
-        JSON Structure:
-        {{
-            "ticker": "STRING (Uppercase)",
-            "text": "STRING (Markdown formatted research report)"
-        }}
-        """
-    
+    Structure:
+    {
+        "ticker": "TICKER",
+        "text": "MARKDOWN_CONTENT"
+    }
+    """    
     config = types.GenerateContentConfig(
             tools=[web_search],
             system_instruction=ai_instruction
