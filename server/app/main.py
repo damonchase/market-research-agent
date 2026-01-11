@@ -14,7 +14,8 @@ import re
 import os
 import yfinance as yf
 import plotly.express as px
-import kaleido
+import matplotlib.pyplot as plt
+import matplotlib
 
 _ = load_dotenv()
 gemini_api_key = os.getenv("GEMINI_API_KEY")
@@ -55,30 +56,35 @@ def generate_graphs(ticker):
     full_history = company.history(period="6mo", interval="1d").round({'Close': 2})
     
     if full_history.empty:
-        raise Exception(f"No stock data found for {ticker}") # Throw exception so 'except' block catches it
+        print(f"No data found for {ticker}")
+        return
 
-    df_list = [
-        {"df": full_history.tail(5), "period": "5d"},
-        {"df": full_history.tail(21), "period": "1mo"},
-        {"df": full_history, "period": "6mo"}
+    periods = [
+        {"data": full_history.tail(5), "name": "5d"},
+        {"data": full_history.tail(21), "name": "1mo"},
+        {"data": full_history, "name": "6mo"}
     ]
 
-    for item in df_list:
-        data = item["df"]
-        period = item["period"]
+    for item in periods:
+        data = item["data"]
+        period_name = item["name"]
         
-        fig1 = px.line(
-            data,
-            x=data.index,
-            y="Close",
-            title=f"{ticker} - {period} Analysis",
-            color_discrete_sequence=['purple']
-        )
+        # Create the plot
+        plt.figure(figsize=(10, 5))
+        plt.plot(data.index, data['Close'], color='purple', linewidth=2)
         
-        # 2. Use Linux-friendly pathing
-        img_path = os.path.join(IMAGES_DIR, f"{period}.png")
-        fig1.write_image(img_path)
+        # Styling
+        plt.title(f"{ticker} - {period_name} Analysis", fontsize=14)
+        plt.xlabel("Date")
+        plt.ylabel("Price (USD)")
+        plt.grid(True, linestyle='--', alpha=0.7)
+        plt.tight_layout()
 
+        # Save the image (Uses standard OS paths we discussed)
+        img_path = os.path.join(IMAGES_DIR, f"{period_name}.png")
+        plt.savefig(img_path)
+        plt.close() # Important: Close the plot to free up memory
+        
 @app.post("/api/generate_response")
 def generate_response(request: PromptRequest):
     content = types.Content(
