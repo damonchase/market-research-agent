@@ -141,4 +141,5 @@ def generate_response(request: PromptRequest):
                 "image_data3": f"data:image/png;base64, {encoded_string3}"}
         
     except Exception as e:
+        print("here")
         return {"text": e}
