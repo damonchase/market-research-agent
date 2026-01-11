@@ -46,14 +46,16 @@ def extract_json(text):
         return match.group(0)
     return text
 
+IMAGES_DIR = os.path.join(os.getcwd(), "images")
+if not os.path.exists(IMAGES_DIR):
+    os.makedirs(IMAGES_DIR)
+
 def generate_graphs(ticker):
     company = yf.Ticker(ticker)
-
     full_history = company.history(period="6mo", interval="1d").round({'Close': 2})
     
     if full_history.empty:
-        print(f"No data found for {ticker}")
-        return
+        raise Exception(f"No stock data found for {ticker}") # Throw exception so 'except' block catches it
 
     df_list = [
         {"df": full_history.tail(5), "period": "5d"},
@@ -70,11 +72,11 @@ def generate_graphs(ticker):
             x=data.index,
             y="Close",
             title=f"{ticker} - {period} Analysis",
-            labels={"Close": "Price (USD)", "Date": "Date"},
             color_discrete_sequence=['purple']
         )
         
-        img_path = fr".\images\{period}.png"
+        # 2. Use Linux-friendly pathing
+        img_path = os.path.join(IMAGES_DIR, f"{period}.png")
         fig1.write_image(img_path)
 
 @app.post("/api/generate_response")
@@ -121,25 +123,29 @@ def generate_response(request: PromptRequest):
 
 
     try:
+        raw_text = response.text
         clean_json = extract_json(raw_text)
         parsed_response = json.loads(clean_json)  
+        
+        # This will now save to /opt/render/project/src/server/images/ on Render
         generate_graphs(parsed_response["ticker"])
 
-        with open("./images/5d.png", "rb") as image_file:
-            encoded_string1 = base64.b64encode(image_file.read()).decode('utf-8')
-        with open("./images/1mo.png", "rb") as image_file2:
-            encoded_string2 = base64.b64encode(image_file2.read()).decode('utf-8')
-        with open("./images/6mo.png", "rb") as image_file3:
-            encoded_string3 = base64.b64encode(image_file3.read()).decode('utf-8')
-        
-        print(f"DEBUG: Text length is {len(str(parsed_response["text"]))}")
-        print(f"DEBUG: Content is {parsed_response["text"]}")
+        # 3. Use the global IMAGES_DIR variable for reading
+        def get_base64(period):
+            path = os.path.join(IMAGES_DIR, f"{period}.png")
+            with open(path, "rb") as f:
+                return base64.b64encode(f.read()).decode('utf-8')
 
-        return {"text": parsed_response["text"],
-                "image_data1": f"data:image/png;base64,{encoded_string1}",
-                "image_data2": f"data:image/png;base64, {encoded_string2}",
-                "image_data3": f"data:image/png;base64, {encoded_string3}"}
+        return {
+            "text": parsed_response["text"],
+            "image_data1": f"data:image/png;base64,{get_base64('5d')}",
+            "image_data2": f"data:image/png;base64,{get_base64('1mo')}",
+            "image_data3": f"data:image/png;base64,{get_base64('6mo')}"
+        }
         
     except Exception as e:
-        print("here")
-        return {"text": e}
+        # Crucial for debugging on Render: 
+        # This prints the REAL error to the Render logs
+        import traceback
+        print(traceback.format_exc()) 
+        return {"text": f"Error: {str(e)}"} 
