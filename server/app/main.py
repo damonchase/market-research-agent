@@ -9,15 +9,12 @@ import os
 from app.tools import web_search
 import yfinance as yf
 import json
-import plotly.express as px
 import re
 import os
 import yfinance as yf
-import plotly.express as px
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import typing_extensions as typing
 
 
 _ = load_dotenv()
