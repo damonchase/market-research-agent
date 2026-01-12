@@ -108,6 +108,12 @@ def generate_response(request: PromptRequest):
                 "ticker": "STRING (Uppercase)",
                 "text": "STRING (Markdown formatted research report)"
             }}
+
+            ### EXAMPLE OF VALID OUTPUT:
+            {{
+                "ticker": "AAPL",
+                "text": "### Analysis\\nApple\\'s recent \\"Vision Pro\\" launch has seen mixed sentiment.\\n\\n**Rating:** Buy."
+            }}
             """
     
     config = types.GenerateContentConfig(
