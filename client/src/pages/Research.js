@@ -22,8 +22,10 @@ function Research() {
 
     setLoading(true);
 
+    const baseURL = process.env.REACT_APP_REMOTE
+    console.log(baseURL)
     try {
-      const res = await fetch(`https://market-research-agent-wkst.onrender.com/api/generate_response`, {
+      const res = await fetch(`${baseURL}/api/generate_response`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -96,7 +98,11 @@ function Research() {
               }
             }}
           >
-            {loading ? "..." : "Analyze"}
+            {loading ? <img  
+              src={"/loading-symbol.gif"} 
+              alt={"Loading symbol"} 
+              style={{ height: '20px', width: '20px' }}
+            /> : "Analyze"}
           </Button>
         </Box>
 
