@@ -127,10 +127,8 @@ def generate_response(request: PromptRequest):
     )
 
     
-
     try:
         json_response = json.loads(extract_json(response.text))
-        print(f"Response ======================\n{json_response["text"]}")
         generate_graphs(json_response["ticker"])
 
         return {
